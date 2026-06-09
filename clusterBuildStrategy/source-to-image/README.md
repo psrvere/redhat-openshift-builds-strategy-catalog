@@ -50,6 +50,7 @@ spec:
 
 | Name | Type | Description | Default |
 | ---- | ---- | ----------- | ------- |
+| build-env | array | Environment variables to set during the build and in the output image. Values must be in the format KEY=VALUE. | [] |
 | registries-block | array | List of registries that needs to be blocked | [] |
 | registries-insecure | array | FQDN of required insecure registries | [] |
 | registries-search | array | List of registries that are preferred when short name images are specified | ["registry.redhat.io", "quay.io"] |
