@@ -24,6 +24,7 @@ spec:
           context=
           dockerfile=
           image=
+          runtimeStageFrom=
           budArgs=()
           inBuildArgs=false
           registriesBlock=""
@@ -57,6 +58,13 @@ spec:
               inRegistriesInsecure=false
               inRegistriesSearch=false
               image="$1"
+              shift
+            elif [ "${arg}" == "--runtime-stage-from" ]; then
+              inBuildArgs=false
+              inRegistriesBlock=false
+              inRegistriesInsecure=false
+              inRegistriesSearch=false
+              runtimeStageFrom="$1"
               shift
             elif [ "${arg}" == "--target" ]; then
               inBuildArgs=false
@@ -146,6 +154,14 @@ spec:
           EOF
           fi
 
+          if [ -n "${runtimeStageFrom}" ]; then
+            lastFromImage=$(tac "${dockerfile}" | grep -m1 -i -E '^[ ]*FROM' | \
+              sed -n '0,/p/s/^[ ]*from[ ]\+\([^ ]*\)[ ]*\(as.*$\)\{0,1\}$/\1/Ip')
+            if [ -n "${lastFromImage}" ]; then
+              budArgs+=("--build-context" "${lastFromImage}=docker-image://${runtimeStageFrom}")
+            fi
+          fi
+
           # Building the image
           echo "[INFO] Building image ${image}"
           buildah --storage-driver=$(params.storage-driver) \
@@ -180,6 +196,8 @@ spec:
         - $(params.registries-search[*])
         - --target
         - $(params.target)
+        - --runtime-stage-from
+        - $(params.runtime-stage-from)
       volumeMounts:
         - mountPath: /etc/pki/entitlement
           name: etc-pki-entitlement
@@ -209,6 +227,10 @@ spec:
       defaults:
         - registry.redhat.io
         - quay.io
+    - name: runtime-stage-from
+      description: "Image name used to replace the value in the last FROM instruction in the Dockerfile."
+      type: string
+      default: ""
     - name: dockerfile
       description: The path to the Dockerfile to be used for building the image.
       type: string
