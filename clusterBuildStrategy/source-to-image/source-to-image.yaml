@@ -23,18 +23,29 @@ spec:
 
           envArgs=()
           inEnvArgs=false
+          scriptsUrl=
           while [[ $# -gt 0 ]]; do
             arg="$1"
             shift
             if [ "${arg}" == "--env" ]; then
               inEnvArgs=true
+            elif [ "${arg}" == "--scripts-url" ]; then
+              inEnvArgs=false
+              scriptsUrl="$1"
+              shift
             elif [ "${inEnvArgs}" == "true" ]; then
               envArgs+=("-e" "${arg}")
             fi
           done
 
+          s2iArgs=()
+          if [ -n "${scriptsUrl}" ]; then
+            s2iArgs+=("--scripts-url=${scriptsUrl}")
+          fi
+
           /usr/local/bin/s2i build \
             "${envArgs[@]}" \
+            "${s2iArgs[@]}" \
             $(params.shp-source-context) \
             $(params.builder-image) \
             $(params.shp-output-image) \
@@ -42,6 +53,8 @@ spec:
         - --
         - --env
         - $(params.build-env[*])
+        - --scripts-url
+        - $(params.scripts-url)
       volumeMounts:
         - name: s2i
           mountPath: /s2i
@@ -182,6 +195,11 @@ spec:
     - name: builder-image
       description: The builder image.
       type: string
+    - name: scripts-url
+      description: "URL of custom S2I scripts, overriding the builder image's default scripts. Empty means use the builder image defaults. Maps to BuildConfig spec.strategy.sourceStrategy.scripts."
+      type: string
+      default: ""
+      # For details see the "--scripts-url" section of https://github.com/openshift/source-to-image/blob/master/docs/cli.md
     - name: storage-driver
       description: "The storage driver to use, such as 'overlay' or 'vfs'."
       type: string
