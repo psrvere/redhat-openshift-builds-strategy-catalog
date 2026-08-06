@@ -46,6 +46,7 @@ spec:
           /usr/local/bin/s2i build \
             "${envArgs[@]}" \
             "${s2iArgs[@]}" \
+            --incremental=$(params.incremental) \
             $(params.shp-source-context) \
             $(params.builder-image) \
             $(params.shp-output-image) \
@@ -200,6 +201,11 @@ spec:
       type: string
       default: ""
       # For details see the "--scripts-url" section of https://github.com/openshift/source-to-image/blob/master/docs/cli.md
+    - name: incremental
+      description: "Perform an incremental build by reusing artifacts from a previously built image. Set to 'true' to enable. Maps to BuildConfig spec.strategy.sourceStrategy.incremental."
+      type: string
+      default: "false"
+      # For details see the "--incremental" section of https://github.com/openshift/source-to-image/blob/master/docs/cli.md
     - name: storage-driver
       description: "The storage driver to use, such as 'overlay' or 'vfs'."
       type: string
