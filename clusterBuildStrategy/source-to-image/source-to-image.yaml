@@ -46,6 +46,7 @@ spec:
           /usr/local/bin/s2i build \
             "${envArgs[@]}" \
             "${s2iArgs[@]}" \
+            --pull-policy=$(params.pull-policy) \
             --incremental=$(params.incremental) \
             $(params.shp-source-context) \
             $(params.builder-image) \
@@ -201,6 +202,10 @@ spec:
       type: string
       default: ""
       # For details see the "--scripts-url" section of https://github.com/openshift/source-to-image/blob/master/docs/cli.md
+    - name: pull-policy
+      description: "Pull policy for the builder image. Valid values: always, never, if-not-present."
+      type: string
+      default: "if-not-present"
     - name: incremental
       description: "Perform an incremental build by reusing artifacts from a previously built image. Set to 'true' to enable. Maps to BuildConfig spec.strategy.sourceStrategy.incremental."
       type: string
